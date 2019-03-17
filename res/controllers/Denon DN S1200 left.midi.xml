@@ -1,0 +1,476 @@
+<?xml version='1.0' encoding='utf-8'?>
+<MixxxControllerPreset schemaVersion="1" mixxxVersion="2.1.0+">
+    <info>
+        <name>Denon DN-S1200 Left v3.0</name>
+        <author>Christophe Rozale</author>
+        <description>1-decks mapping for Denon DN-S1200 controller - Left Side (Channel1)</description>
+        <forums></forums>
+    </info>
+    <controller id="DN-S1200-Left">
+        <scriptfiles>
+            <file functionprefix="DNS1200" filename="Denon-DN-S1200-scriptsv2.js"/>
+        </scriptfiles>
+        <controls>
+            <!-- Assign Deck 1 to Channel 1 | Consider this is the Denon placed of left side -->
+                <!-- Loop In -->
+            <control>
+                <group>[Channel1]</group>
+                <!-- <key>loop_in</key> -->
+				<key>DNS1200.loopCallback</key>
+                <description>A1 Button Pressed</description>
+                <status>0x90</status>
+                <midino>0x37</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.loopCallback</key>
+                <description>A1 Button Released</description>
+                <status>0x80</status>
+                <midino>0x37</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+                <!-- Loop In -->
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.loopCallback</key>
+                <description>A2 Button Pressed</description>
+                <status>0x90</status>
+                <midino>0x38</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.loopCallback</key>
+                <description>A2 Button Released</description>
+                <status>0x80</status>
+                <midino>0x38</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+                <!-- Loop Out -->
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.loopCallback</key>
+                <description>B Button Pressed</description>
+                <status>0x90</status>
+                <midino>0x39</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.loopCallback</key>
+                <description>B Button Released</description>
+                <status>0x80</status>
+                <midino>0x39</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+                <!-- Exit /Reloop -->
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.loopCallback</key>
+                <description>Exit / Reloop button pressed</description>
+                <status>0x90</status>
+                <midino>0x40</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+             
+                <!-- Echo / Loop -->
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.effectCallback</key>
+                <description>Echo / Loop Button Pressed</description>
+                <status>0x90</status>
+                <midino>0x12</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            
+                <!-- Flanger -->
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.effectCallback</key>
+                <description>Flanger Button Pressed</description>
+                <status>0x90</status>
+                <midino>0x13</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+                <!-- Filter -->
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.effectCallback</key>
+                <description>Filter Button Pressed</description>
+                <status>0x90</status>
+                <midino>0x14</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <!-- Play -->
+            <control>
+                <group>[Channel1]</group>
+                <!-- <key>play</key> -->
+                <key>DNS1200.playButton</key>
+                <description>PLAY/PAUSE Button Pressed</description>
+                <status>0x90</status>
+                <midino>0x43</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.playButton</key> <!-- Let's do nothing when released -->
+                <description>PLAY/PAUSE Button Released</description>
+                <status>0x80</status>
+                <midino>0x43</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <!-- Eject -->
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.ejectButton</key>
+                <description>Disc Eject Button Pressed</description>
+                <status>0x90</status>
+                <midino>0x01</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.ejectButton</key> <!-- Let's do nothing when released -->
+                <description>Disc Eject Button Released</description>
+                <status>0x80</status>
+                <midino>0x01</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <!-- Cue -->
+            <control>
+                <group>[Channel1]</group>
+                <key>cue_default</key>
+                <description>CUE Button Pressed</description>
+                <status>0x90</status>
+                <midino>0x42</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>cue_default</key>
+                <description>CUE Button Released</description>
+                <status>0x80</status>
+                <midino>0x42</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <!-- Center Side of the Deck -->
+                <!-- Time -->
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.timeKey</key>
+                <description>Time Key Pressed</description>
+                <status>0x90</status>
+                <midino>0x23</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.timeKey</key>
+                <description>Time Key Released</description>
+                <status>0x80</status>
+                <midino>0x23</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+              <!--Platter touch -->
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.platterTouch</key>
+                <description>Anywhere Platter Touch Pressed</description>
+                <status>0x90</status>
+                <midino>0x51</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.platterTouch</key>
+                <description>Anywhere Platter Touch Released</description>
+                <status>0x80</status>
+                <midino>0x51</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <!-- Jog whel -->
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.jogWheel</key>
+                <description>Left Platter Jog Wheel</description>
+                <status>0xB0</status>
+                <midino>0x51</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+
+            <control>
+                <group>[Channel1]</group>
+                <key>rate</key>
+                <description>Pitch Slider</description>
+                <status>0xE0</status>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <!-- Right Side of the Denon -->
+                <!-- FWD -->
+            <control>
+                <group>[Channel1]</group>
+                <key>fwd</key>
+                <description>Quick Jump FWD Button Pressed</description>
+                <status>0x90</status>
+                <midino>0x10</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>fwd</key>
+                <description>Quick Jump FWD Button Released</description>
+                <status>0x80</status>
+                <midino>0x10</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+                <!-- REW -->
+            <control>
+                <group>[Channel1]</group>
+                <key>back</key>
+                <description>Quick Jump REV Button Pressed</description>
+                <status>0x90</status>
+                <midino>0x11</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>back</key>
+                <description>Quick Jump REV Button Released</description>
+                <status>0x80</status>
+                <midino>0x11</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+                <!-- Jog Mode -->
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.jogModeToggle</key>
+                <description>Jog Mode Button Pressed</description>
+                <status>0x90</status>
+                <midino>0x04</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.jogModeToggle</key>
+                <description>Jog Mode Button Released</description>
+                <status>0x80</status>
+                <midino>0x04</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+                <!-- Pitch Key -->
+             <control>
+                <group>[Channel1]</group>
+                <key>keylock</key>
+                <description>Pitch/Key Pressed</description>
+                <status>0x90</status>
+                <midino>0x05</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+             <control>
+                <group>[Channel1]</group>
+                <key>keylock</key>
+                <description>Pitch/Key Released</description>
+                <status>0x80</status>
+                <midino>0x05</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+                 <!-- Parameters Knob -->
+             <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.parametersKnob</key>
+                <description>Parameters Knob Button Pressed</description>
+                <status>0x90</status>
+                <midino>0x28</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+             <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.parametersKnob</key>
+                <description>Parameters Knob Button Released</description>
+                <status>0x80</status>
+                <midino>0x28</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.parametersKnob</key>
+                <description>Parameters Knob Button</description>
+                <status>0xB0</status>
+                <midino>0x54</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <!-- Brake buttons -->
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.brake_button</key>
+                <description>Brake Button Pressed</description>
+                <status>0x90</status>
+                <midino>0x44</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.brake_button</key>
+                <description>Brake Button Released</description>
+                <status>0x80</status>
+                <midino>0x44</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+
+            <!-- Dump buttons -->
+            <control>
+                <group>[Channel1]</group>
+                <key>reverseroll</key>
+                <description>Dump button pressed</description>
+                <status>0x90</status>
+                <midino>0x45</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>reverseroll</key>
+                <description>Dump button released</description>
+                <status>0x80</status>
+                <midino>0x45</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <!-- Reverse buttons -->
+            <control>
+                <group>[Channel1]</group>
+                <key>reverse</key>
+                <description>Reverse button pressed</description>
+                <status>0x90</status>
+                <midino>0x46</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>reverse</key>
+                <description>Reverse button released</description>
+                <status>0x80</status>
+                <midino>0x46</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <!-- Pitch-bend buttons -->
+            <control>
+                <group>[Channel1]</group>
+                <key>rate_temp_down</key>
+                <description>PITCH BEND button (-) pressed</description>
+                <status>0x90</status>
+                <midino>0x09</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>rate_temp_down</key>
+                <description>PITCH BEND button (-) released</description>
+                <status>0x80</status>
+                <midino>0x09</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>rate_temp_up</key>
+                <description>PITCH BEND button (+) pressed</description>
+                <status>0x90</status>
+                <midino>0x08</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>rate_temp_up</key>
+                <description>PITCH BEND button (+) released</description>
+                <status>0x80</status>
+                <midino>0x08</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+		</controls>
+    </controller>
+</MixxxControllerPreset>
