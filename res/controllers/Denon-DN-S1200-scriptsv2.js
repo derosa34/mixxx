@@ -396,6 +396,7 @@ DNS1200.platterTouch = function (channel, control, value, status, group) {
 
 }
 
+
 // Callback for pressing loop in key
 DNS1200.loopCallback = function (channel, control, value, status, group) {
 	//if A1 or A2 key is pressed
@@ -419,13 +420,17 @@ DNS1200.loopCallback = function (channel, control, value, status, group) {
 					engine.setValue(group, "hotcue_1_clear", 1);
 					DNS1200.displayTextLine1(group, "Hot Cue 1");
 					DNS1200.displayTextLine2(group, "Cleared");
+				} else if (engine.getValue(group, "hotcue_1_enabled")) {
+				engine.setValue(group, "hotcue_1_activate", 1);
 				}
+				//Update HotCue LED
+				DNS1200.updateHotCueLED(group);
 			} else {
 				engine.setValue(group, "loop_in", value);
 				DNS1200.toggleLightLayer1(group,0x24,2); //BLINK for LED: A1
 				DNS1200.toggleLightLayer2(group,0x16,2); //BLINK for (: A1 Side
 				DNS1200.toggleLightLayer2(group,0x1A,2); //BLINK for A1 Side					
-			}
+			} 
 			break;
 		case 56: //A2 is pressed or released
 			DNS1200.logInfo("A2 is pressed channel:"+channel+" control:"+control+" value:"+value+" status:"+status+" group:"+group);
@@ -440,7 +445,11 @@ DNS1200.loopCallback = function (channel, control, value, status, group) {
 					engine.setValue(group, "hotcue_2_clear", 1);
 					DNS1200.displayTextLine1(group, "Hot Cue 2");
 					DNS1200.displayTextLine2(group, "Cleared");
+				} else if (engine.getValue(group, "hotcue_2_enabled")) {
+					engine.setValue(group, "hotcue_2_activate", 1);
 				}
+				//Update HotCue LED
+				DNS1200.updateHotCueLED(group);
 			} else {
 				engine.setValue(group, "beatloop_activate", 1);
 				DNS1200.toggleLightLayer1(group,0x24,1); //ON for LED: A1
@@ -454,26 +463,68 @@ DNS1200.loopCallback = function (channel, control, value, status, group) {
 			break;
 		case 57: //B is pressed or released
 			DNS1200.logInfo("B is pressed channel:"+channel+" control:"+control+" value:"+value+" status:"+status+" group:"+group);
-			engine.setValue(group, "loop_out", value);
-			DNS1200.toggleLightLayer1(group,0x24,1); //ON for LED: A1
-			DNS1200.toggleLightLayer2(group,0x16,1); //ON for (: A1 Side
-			DNS1200.toggleLightLayer2(group,0x18,1); //ON for ): A1 Side					
-			DNS1200.toggleLightLayer2(group,0x1A,1); //ON for A1 Side					
-			DNS1200.toggleLightLayer2(group,0x1C,1); //ON for B: A1 Side				
+			if (DNS1200.Deck[group].hotcue_mode) {
+				if (value === 0) return;     // don't respond to note off messages
+				if (DNS1200.Deck[group].memo_pressed) {
+					engine.setValue(group, "hotcue_3_activate", 1);
+					DNS1200.displayTextLine1(group, "Hot Cue 3");
+					DNS1200.displayTextLine2(group, "Set");
+					DNS1200.Deck[group].memo_pressed = false;
+				} else if (DNS1200.Deck[group].flip_pressed) {
+					engine.setValue(group, "hotcue_3_clear", 1);
+					DNS1200.displayTextLine1(group, "Hot Cue 3");
+					DNS1200.displayTextLine2(group, "Cleared");
+				} else if (engine.getValue(group, "hotcue_3_enabled")) {
+					engine.setValue(group, "hotcue_3_activate", 1);
+				}
+				//Update HotCue LED
+				DNS1200.updateHotCueLED(group);
+			} else {
+				engine.setValue(group, "loop_out", value);
+				DNS1200.toggleLightLayer1(group,0x24,1); //ON for LED: A1
+				DNS1200.toggleLightLayer2(group,0x16,1); //ON for (: A1 Side
+				DNS1200.toggleLightLayer2(group,0x18,1); //ON for ): A1 Side					
+				DNS1200.toggleLightLayer2(group,0x1A,1); //ON for A1 Side					
+				DNS1200.toggleLightLayer2(group,0x1C,1); //ON for B: A1 Side				
+			}
 			break;
 		case 64: //EXIT / Reloop is pressed or released
 			DNS1200.logInfo("EXIT is pressed channel:"+channel+" control:"+control+" value:"+value+" status:"+status+" group:"+group);
 			if (value === 0) return;     // don't respond to note off messages
-			if (engine.getValue(group, "loop_end_position") !== -1) { //if a loop exists IE loop end position is set
-				engine.setValue(group, "reloop_toggle", 1); //Toggle loop
-				if (engine.getValue(group, "loop_enabled")) {
-					DNS1200.toggleLightLayer1(group,0x24,1); //ON for LED: A1 
-					DNS1200.toggleLightLayer2(group,0x16,1); //ON for (: A1 Side
-					DNS1200.toggleLightLayer2(group,0x18,1); //ON for ): A1 Side					
+			if (DNS1200.Deck[group].flip_pressed) {
+				DNS1200.Deck[group].hotcue_mode = !DNS1200.Deck[group].hotcue_mode;
+				if (DNS1200.Deck[group].hotcue_mode) { //If Hot Cue Mode is enabled
+					DNS1200.displayTextLine1(group, "HotCue Mode");
+					DNS1200.displayTextLine2(group, "Enabled");
+					//Update LED
+					DNS1200.updateHotCueLED(group);
 				} else {
-					DNS1200.toggleLightLayer1(group,0x3E,1); //ON for LED: A1 Dimmer
-					DNS1200.toggleLightLayer2(group,0x16,2); //BLINK for (: A1 Side
-					DNS1200.toggleLightLayer2(group,0x18,2); //BLINK for ): A1 Side					
+					DNS1200.displayTextLine1(group, "HotCue Mode");
+					DNS1200.displayTextLine2(group, "Disabled");
+					//Update LED
+					if (engine.getValue(group, "loop_enabled")) {
+						DNS1200.toggleLightLayer1(group,0x24,1); //ON for LED: A1 
+						DNS1200.toggleLightLayer2(group,0x16,1); //ON for (: A1 Side
+						DNS1200.toggleLightLayer2(group,0x18,1); //ON for ): A1 Side					
+					} else {
+						DNS1200.toggleLightLayer1(group,0x3E,1); //ON for LED: A1 Dimmer
+						DNS1200.toggleLightLayer2(group,0x16,2); //BLINK for (: A1 Side
+						DNS1200.toggleLightLayer2(group,0x18,2); //BLINK for ): A1 Side					
+					}
+					
+				}
+			} else { 
+				if (engine.getValue(group, "loop_end_position") !== -1) { //if a loop exists IE loop end position is set
+					engine.setValue(group, "reloop_toggle", 1); //Toggle loop
+					if (engine.getValue(group, "loop_enabled")) {
+						DNS1200.toggleLightLayer1(group,0x24,1); //ON for LED: A1 
+						DNS1200.toggleLightLayer2(group,0x16,1); //ON for (: A1 Side
+						DNS1200.toggleLightLayer2(group,0x18,1); //ON for ): A1 Side					
+					} else {
+						DNS1200.toggleLightLayer1(group,0x3E,1); //ON for LED: A1 Dimmer
+						DNS1200.toggleLightLayer2(group,0x16,2); //BLINK for (: A1 Side
+						DNS1200.toggleLightLayer2(group,0x18,2); //BLINK for ): A1 Side					
+					}
 				}
 			}
 			//DNS1200.logInfo("loop_enable:"+engine.getValue(group, "loop_enabled"));
@@ -487,6 +538,7 @@ DNS1200.loopCallback = function (channel, control, value, status, group) {
  
 }
 
+
 // Callback for pressing loop in key
 DNS1200.memoCallback = function (channel, control, value, status, group) {
 	if (value === 0) return;     // don't respond to note off messages
@@ -495,6 +547,7 @@ DNS1200.memoCallback = function (channel, control, value, status, group) {
 		DNS1200.displayTextLine1(group, "Memo");
 	} else {
 		DNS1200.displayTextLine1(group, "Desk N°"+DNS1200.Deck[group].engineChannel);
+		DNS1200.displayTextLine2(group, "Derosa");
 	}
 }
 // Control callback when track duration changes (new track is loaded)
@@ -545,7 +598,7 @@ DNS1200.effectCallback = function (channel, control, value, status, group) {
         DNS1200.metaKnob(group, 0);
     }
     
-    //Update LED
+    //Update Effect LED
     DNS1200.updateEffectLED(group);
     DNS1200.updateTextLines(group);
     //DNS1200.logInfo("****** channel:"+channel+" control:"+control+" value:"+value+" status:"+status);
@@ -570,6 +623,23 @@ DNS1200.updateEffectLED = function (group) {
     if (DNS1200.Deck[group].active_effect) {
         midi.sendShortMsg(DNS1200.MIDI_CH[group], 0x4A, 9+2*DNS1200.Deck[group].active_effect);
     }
+}
+
+DNS1200.updateHotCueLED = function (group) {
+	var hotcue_1_enabled = engine.getValue(group, "hotcue_1_enabled");
+	var hotcue_2_enabled = engine.getValue(group, "hotcue_2_enabled");
+	var hotcue_3_enabled = engine.getValue(group, "hotcue_3_enabled");
+	var hotcue_4_enabled = engine.getValue(group, "hotcue_4_enabled");
+	DNS1200.toggleLightLayer1(group,0x24,hotcue_1_enabled); //for LED: A1
+	DNS1200.toggleLightLayer2(group,0x16,hotcue_1_enabled); //for (: A1 Side
+	DNS1200.toggleLightLayer2(group,0x1A,hotcue_1_enabled); //for A1 Side
+	DNS1200.toggleLightLayer1(group,0x25,hotcue_2_enabled); //for LED: A2
+	DNS1200.toggleLightLayer2(group,0x17,hotcue_2_enabled); //for (: A2 Side
+	DNS1200.toggleLightLayer2(group,0x1B,hotcue_2_enabled); //for A2 Side
+	DNS1200.toggleLightLayer2(group,0x1C,hotcue_3_enabled); //for B: A1 Side
+	DNS1200.toggleLightLayer2(group,0x18,hotcue_3_enabled); //for ): A1 Side
+	DNS1200.toggleLightLayer2(group,0x1D,hotcue_4_enabled); //for B: A2 Side
+	DNS1200.toggleLightLayer2(group,0x19,hotcue_4_enabled); //for ): A2 Side
 }
 
 DNS1200.updateTextLines = function (group) {
@@ -719,10 +789,19 @@ DNS1200.ejectButton = function (channel, control, value, status, group) {
 		else {
 			//Eject track from desk
 			engine.setParameter(group, "eject", true);
+			engine.setParameter("[EffectRack1_EffectUnit"+DNS1200.Deck[group].engineChannel+"_Effect1]","enabled",0); //Effet 1 to "Disabled"
+			engine.setParameter("[EffectRack1_EffectUnit"+DNS1200.Deck[group].engineChannel+"_Effect2]","enabled",0); //Effet 2 to "Disabled"
+			engine.setParameter("[EffectRack1_EffectUnit"+DNS1200.Deck[group].engineChannel+"_Effect3]","enabled",0); //Effet 3 to "Disabled"
+			DNS1200.Deck[group].active_effect = 0;
+			
 			DNS1200.toggleLightLayer1(group, 0x01, 0);
 			DNS1200.displayTextLine1(group, "Desk N°"+DNS1200.Deck[group].engineChannel);
 			DNS1200.displayTextLine2(group, "No Track");
-
+			DNS1200.Deck[group].hotcue_mode = false;
+			DNS1200.updateHotCueLED(group);
+			//Update Effect LED
+			DNS1200.updateEffectLED(group);
+			DNS1200.updateTextLines(group);
 		}
 	} 
 	/*
@@ -744,15 +823,15 @@ DNS1200.updateEffect = function (engineChannel, active_effect, effectIndex) {
     //Clear effect
     DNS1200.logInfo("Clear effect");
 	engine.setParameter(effectUnit,"clear",true);
-    //Place meta to middle value (prevent bad result when changing effect during play)
 	DNS1200.logInfo("Place meta to middle");
-    engine.setParameter(effectUnit,"meta",0.5);
     //TO DO create a tab for default value for meta depending on selected effect
     //Turn next effect until wanted effect is selected
     DNS1200.logInfo("Turn next effect");
 	for (i = 0; i < effectIndex; i++) {
         engine.setParameter(effectUnit,"effect_selector",1);    
     } 
+    //Place meta to middle value (prevent bad result when changing effect during play)
+    engine.setParameter(effectUnit,"meta",0.5);
 }
 
 
