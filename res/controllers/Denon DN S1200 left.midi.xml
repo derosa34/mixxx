@@ -12,7 +12,7 @@
         </scriptfiles>
         <controls>
             <!-- Assign Deck 1 to Channel 1 | Consider this is the Denon placed of left side -->
-                <!-- Loop In -->
+                <!-- Loop In A1 -->
             <control>
                 <group>[Channel1]</group>
                 <!-- <key>loop_in</key> -->
@@ -34,7 +34,7 @@
                     <script-binding/>
                 </options>
             </control>
-                <!-- Loop In -->
+                <!-- Loop In A2 -->
             <control>
                 <group>[Channel1]</group>
                 <key>DNS1200.loopCallback</key>
@@ -55,7 +55,28 @@
                     <script-binding/>
                 </options>
             </control>
-                <!-- Loop Out -->
+                <!-- Flip -->
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.loopCallback</key>
+                <description>Flip Button Pressed</description>
+                <status>0x90</status>
+                <midino>0x36</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.loopCallback</key>
+                <description>Flip Button Released</description>
+                <status>0x80</status>
+                <midino>0x36</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+                <!-- Loop Out B -->
             <control>
                 <group>[Channel1]</group>
                 <key>DNS1200.loopCallback</key>
@@ -83,6 +104,37 @@
                 <description>Exit / Reloop button pressed</description>
                 <status>0x90</status>
                 <midino>0x40</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.loopCallback</key>
+                <description>Exit / Reloop button released</description>
+                <status>0x80</status>
+                <midino>0x40</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+                <!-- TAP -->
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.testCallback</key>
+                <description>TAP button pressed</description>
+                <status>0x90</status>
+                <midino>0x07</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.testCallback</key>
+                <description>TAP button released</description>
+                <status>0x80</status>
+                <midino>0x07</midino>
                 <options>
                     <script-binding/>
                 </options>
@@ -251,6 +303,49 @@
                 </options>
             </control>
             <!-- Right Side of the Denon -->
+                <!-- MEMO -->
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.memoCallback</key>
+                <description>MEMO Button Pressed</description>
+                <status>0x90</status>
+                <midino>0x24</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.memoCallback</key>
+                <description>MEMO Button Released</description>
+                <status>0x80</status>
+                <midino>0x24</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+                <!-- BACK -->
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.backCallback</key>
+                <description>BACK Button Pressed</description>
+                <status>0x90</status>
+                <midino>0x30</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>DNS1200.backCallback</key>
+                <description>BACK Button Released</description>
+                <status>0x80</status>
+                <midino>0x30</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+			
                 <!-- FWD -->
             <control>
                 <group>[Channel1]</group>

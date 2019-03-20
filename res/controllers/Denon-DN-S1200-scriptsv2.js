@@ -86,7 +86,7 @@ DNS1200.myEffects = ["None", "Autopan", "Balance", "Echo", "Filter", "Flanger", 
 // Define Deck Table
 DNS1200.Deck = []; //Mustbe declared here to be accessible from the rest of scripts !!
 
-
+DNS1200.pitchTimer = 0;
 
 
 ////////////////////////////////////////////////////////////////////////
@@ -413,13 +413,12 @@ DNS1200.loopCallback = function (channel, control, value, status, group) {
 				if (value === 0) return;     // don't respond to note off messages
 				if (DNS1200.Deck[group].memo_pressed) {
 					engine.setValue(group, "hotcue_1_activate", 1);
-					DNS1200.displayTextLine1(group, "Hot Cue 1");
-					DNS1200.displayTextLine2(group, "Set");
+					//DNS1200.displayTextLine1(group, "Hot Cue 1");
+					//DNS1200.displayTextLine2(group, "Set");
 					DNS1200.Deck[group].memo_pressed = false;
 				} else if (DNS1200.Deck[group].flip_pressed) {
 					engine.setValue(group, "hotcue_1_clear", 1);
-					DNS1200.displayTextLine1(group, "Hot Cue 1");
-					DNS1200.displayTextLine2(group, "Cleared");
+					DNS1200.displayTextLine1(group, "A1 Clear");
 				} else if (engine.getValue(group, "hotcue_1_enabled")) {
 				engine.setValue(group, "hotcue_1_activate", 1);
 				}
@@ -438,13 +437,13 @@ DNS1200.loopCallback = function (channel, control, value, status, group) {
 				if (value === 0) return;     // don't respond to note off messages
 				if (DNS1200.Deck[group].memo_pressed) {
 					engine.setValue(group, "hotcue_2_activate", 1);
-					DNS1200.displayTextLine1(group, "Hot Cue 2");
-					DNS1200.displayTextLine2(group, "Set");
+					//DNS1200.displayTextLine1(group, "Hot Cue 2");
+					//DNS1200.displayTextLine2(group, "Set");
 					DNS1200.Deck[group].memo_pressed = false;
 				} else if (DNS1200.Deck[group].flip_pressed) {
 					engine.setValue(group, "hotcue_2_clear", 1);
-					DNS1200.displayTextLine1(group, "Hot Cue 2");
-					DNS1200.displayTextLine2(group, "Cleared");
+					DNS1200.displayTextLine1(group, "A2 Clear");
+					//DNS1200.displayTextLine2(group, "Cleared");
 				} else if (engine.getValue(group, "hotcue_2_enabled")) {
 					engine.setValue(group, "hotcue_2_activate", 1);
 				}
@@ -773,6 +772,29 @@ DNS1200.parametersKnob = function (channel, control, value, status, group) {
 
 }
 
+DNS1200.testCallback = function (channel, control, value, status, group) {
+	DNS1200.logInfo("testCallback called: control:"+control+" value:"+value+" status:"+status+" channel:"+channel+ " group:"+group);
+	if (value) {// button pressed start timer
+		//begin timer 
+		DNS1200.pitchTimer = engine.beginTimer(1000,function() { DNS1200.pitchRangeChange(group); }, true);
+	} else { //button released
+		if (DNS1200.pitchTimer !== 0) { //if a timer is running, stop it
+			engine.stopTimer(DNS1200.pitchTimer);
+		}
+		DNS1200.pitchTimer = 0; //reset timer
+	}
+}
+
+DNS1200.pitchRangeChange = function (group) {
+    // Rate range toggle button callback
+    var currRateRange = engine.getValue(group, "rateRange");
+	DNS1200.logInfo("pitchRangeChange called: currRateRange:"+currRateRange+" group:"+group);
+	//engine.stopTimer(DNS1200.pitchTimer);
+	DNS1200.pitchTimer = 0;
+	engine.setValue(group, "rateRange", 0.5);
+
+}
+
 DNS1200.ejectButton = function (channel, control, value, status, group) {
 	//Button released=> Do nothing
 	if (value === 0) {
@@ -783,8 +805,7 @@ DNS1200.ejectButton = function (channel, control, value, status, group) {
 	if (track_loaded) {
 		var currentlyPlaying = engine.getValue(group, "play");
 		if (currentlyPlaying) {
-			DNS1200.displayTextLine1(group, "Can't Eject");
-			DNS1200.displayTextLine2(group, "Wile Playing");
+			DNS1200.displayTextLine1(group, "  Push Cue");
 		}
 		else {
 			//Eject track from desk
@@ -802,6 +823,7 @@ DNS1200.ejectButton = function (channel, control, value, status, group) {
 			//Update Effect LED
 			DNS1200.updateEffectLED(group);
 			DNS1200.updateTextLines(group);
+			engine.setParameter(group, "eject", false);
 		}
 	} 
 	/*
@@ -809,6 +831,13 @@ DNS1200.ejectButton = function (channel, control, value, status, group) {
 		//engine.setParameter(group, "LoadSelectedTrack", true);
 	}
 	*/
+}
+
+DNS1200.backCallback = function (channel, control, value, status, group) {
+	//Button released=> Do nothing
+	if (value === 0) {
+        return;
+    }
 }
 
 DNS1200.updateEffect = function (engineChannel, active_effect, effectIndex) {
@@ -877,8 +906,6 @@ DNS1200.playChanged = function (value, group) {
     if (currentlyPlaying === 1) {
         // Disable scratch mode, don't ramp.
         engine.scratchDisable(deck, false);
-        // platter FWD
-        midi.sendShortMsg(DNS1200.MIDI_CH[group], 0x67, 0x00); //TODO check if this MIDI message has sense with DENON
     } else {
         // Scratch on, don't ramp.
         DNS1200.scratchEnable(deck, false);
@@ -930,7 +957,7 @@ DNS1200.playPositionChanged = function (value, group) {
 }
 
 DNS1200.updateTrackPosition = function (value, group) {
-    DNS1200.logInfo("updateTrackPosition called: value:"+value+" group:"+group+" remain_mode:"+DNS1200.Deck[group].remain_mode);
+//    DNS1200.logInfo("updateTrackPosition called: value:"+value+" group:"+group+" remain_mode:"+DNS1200.Deck[group].remain_mode);
     var track_position = engine.getValue(group, "playposition");
 
     // Track percentage position.
@@ -983,7 +1010,7 @@ DNS1200.displayTextLine1 = function (group, textToDisplay) {
     //Write text
     for (i = 0, len = textToDisplay.length; i < len; i++) { 
         var hexval = textToDisplay.charCodeAt(i).toString(16);
-        var jump = (i>3) ? 1 : 0; //Can't explain why but there is a whole for char5 in Denon HID
+        var jump = (i>3) ? 1 : 0; //Can't explain why but there is a whole for char5 in Denon HID only for Line1
         midi.sendShortMsg(DNS1200.MIDI_CH[group], MSB+i+jump, "0x0"+hexval[0]); //Send left part of ASCII value to MSB
         midi.sendShortMsg(DNS1200.MIDI_CH[group], LSB+i+jump, "0x0"+hexval[1]); //Send left part of ASCII value to LSB
     }
@@ -992,15 +1019,6 @@ DNS1200.displayTextLine1 = function (group, textToDisplay) {
         midi.sendShortMsg(DNS1200.MIDI_CH[group], MSB+i, "0x02"); //Send left part of ASCII value to MSB
         midi.sendShortMsg(DNS1200.MIDI_CH[group], LSB+i, "0x00"); //Send left part of ASCII value to LSB
     }
-
-/*
-    for (i = 0, len = textToDisplay.length; i < len; i++) { 
-        var hexval = textToDisplay.charCodeAt(i).toString(16);
-        var jump = (i>3) ? 1 : 0; //Can't explain why but there is a whole for char5 in Denon HID
-        midi.sendShortMsg(DNS1200.MIDI_CH[group], MSB+i+jump, "0x0"+hexval[0]); //Send left part of ASCII value to MSB
-        midi.sendShortMsg(DNS1200.MIDI_CH[group], LSB+i+jump, "0x0"+hexval[1]); //Send left part of ASCII value to LSB
-    }
-*/
 }    
 
 DNS1200.displayTextLine2 = function (group, textToDisplay) {
