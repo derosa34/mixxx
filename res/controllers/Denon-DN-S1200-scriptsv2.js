@@ -138,29 +138,6 @@ DNS1200.init = function (id, debug) {
     //Tests and Debug
     //CheckAndDebug();
     
-    /*
-    components.Button.prototype.isPress = function (channel, control, value, status) {
-        DNS1200.logInfo("[WOW] channel="+channel+" control="+control+" value="+value+" status="+status);
-        return (status & 0xF0) === 0x90;
-    };
-    components.Button.prototype.isRelease = function (channel, control, value, status) {
-        return (status & 0xF0) === 0x80;
-    };
-    components.Button.prototype.off = DNS1200.MIDI_TRI_LED_OFF;
-    components.Button.prototype.on = DNS1200.MIDI_TRI_LED_ON;
-    components.Button.prototype.on_shifted = DNS1200.MIDI_TRI_LED_BLINK;
-    components.Button.prototype.send = function (value) {
-        if (this.midi === undefined || this.midi[0] === undefined || this.midi[1] === undefined) {
-            return;
-        }
-        // For Denon hardware we need to swap the 2 midi bytes (= 2nd/3rd param) in sendShortMsg()!
-        if (value == this.on && this.sendShifted) {
-            midi.sendShortMsg(this.midi[0], this.on_shifted, this.midi[1]);
-        } else {
-            midi.sendShortMsg(this.midi[0], value, this.midi[1]);
-        }
-    };
-    //*/
 };
 
 DNS1200.shutdown = function () {
