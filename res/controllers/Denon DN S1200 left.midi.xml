@@ -349,43 +349,43 @@
                 <!-- FWD -->
             <control>
                 <group>[Channel1]</group>
-                <key>fwd</key>
+                <key>DNS1200.fwdCallback</key>
                 <description>Quick Jump FWD Button Pressed</description>
                 <status>0x90</status>
                 <midino>0x10</midino>
                 <options>
-                    <normal/>
+                    <script-binding/>
                 </options>
             </control>
             <control>
                 <group>[Channel1]</group>
-                <key>fwd</key>
+                <key>DNS1200.fwdCallback</key>
                 <description>Quick Jump FWD Button Released</description>
                 <status>0x80</status>
                 <midino>0x10</midino>
                 <options>
-                    <normal/>
+                    <script-binding/>
                 </options>
             </control>
                 <!-- REW -->
             <control>
                 <group>[Channel1]</group>
-                <key>back</key>
+                <key>DNS1200.rewCallback</key>
                 <description>Quick Jump REV Button Pressed</description>
                 <status>0x90</status>
                 <midino>0x11</midino>
                 <options>
-                    <normal/>
+                    <script-binding/>
                 </options>
             </control>
             <control>
                 <group>[Channel1]</group>
-                <key>back</key>
+                <key>DNS1200.rewCallback</key>
                 <description>Quick Jump REV Button Released</description>
                 <status>0x80</status>
                 <midino>0x11</midino>
                 <options>
-                    <normal/>
+                    <script-binding/>
                 </options>
             </control>
                 <!-- Jog Mode -->

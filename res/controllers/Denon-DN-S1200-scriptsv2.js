@@ -817,6 +817,36 @@ DNS1200.backCallback = function (channel, control, value, status, group) {
     }
 }
 
+DNS1200.fwdCallback = function (channel, control, value, status, group) {
+	//Button released=> Do nothing
+	if (value === 0) {
+        return;
+    }
+    if (engine.getValue(group, "play")) {//If desk is playing
+        engine.setValue(group, "beatjump_forward", true);    
+    } else if (engine.getParameter(group, "track_loaded")) {//If track is loaded
+        engine.setValue(group, "fwd", true);
+    } else { //No track loaded let's switch focus
+        engine.setValue("Library", "MoveFocusForward", true);
+    }
+}
+
+DNS1200.rewCallback = function (channel, control, value, status, group) {
+	//Button released=> Do nothing
+	if (value === 0) {
+        return;
+    }
+    if (engine.getValue(group, "play")) {//If desk is playing
+        engine.setValue(group, "beatjump_backward", true);    
+    } else if (engine.getParameter(group, "track_loaded")) {//If track is loaded
+        engine.setValue(group, "back", true);
+    }
+    else {
+        engine.setValue("Library", "MoveFocusBackward", true);
+    }
+}
+
+
 DNS1200.updateEffect = function (engineChannel, active_effect, effectIndex) {
 	DNS1200.logInfo("updateEffect called: engineChannel:"+engineChannel+" active_effect:"+active_effect+" effectIndex:"+effectIndex);
     //This function will update the mixxx engine effect
