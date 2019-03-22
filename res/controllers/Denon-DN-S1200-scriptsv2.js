@@ -819,30 +819,30 @@ DNS1200.backCallback = function (channel, control, value, status, group) {
 
 DNS1200.fwdCallback = function (channel, control, value, status, group) {
 	//Button released=> Do nothing
-	if (value === 0) {
+	/*if (value === 0) {
         return;
-    }
+    }*/
     if (engine.getValue(group, "play")) {//If desk is playing
-        engine.setValue(group, "beatjump_forward", true);    
+        engine.setValue(group, "beatjump_forward", (value>0));    
     } else if (engine.getParameter(group, "track_loaded")) {//If track is loaded
-        engine.setValue(group, "fwd", true);
+        engine.setValue(group, "fwd", (value>0));
     } else { //No track loaded let's switch focus
-        engine.setValue("Library", "MoveFocusForward", true);
+        engine.setValue("[Library]", "MoveFocusForward", (value>0));
     }
 }
 
 DNS1200.rewCallback = function (channel, control, value, status, group) {
 	//Button released=> Do nothing
-	if (value === 0) {
-        return;
-    }
+	//if (value === 0) {
+    //    return;
+    //}
     if (engine.getValue(group, "play")) {//If desk is playing
-        engine.setValue(group, "beatjump_backward", true);    
+        engine.setValue(group, "beatjump_backward", (value>0));    
     } else if (engine.getParameter(group, "track_loaded")) {//If track is loaded
-        engine.setValue(group, "back", true);
+        engine.setValue(group, "back", (value>0));
     }
     else {
-        engine.setValue("Library", "MoveFocusBackward", true);
+        engine.setValue("[Library]", "MoveFocusBackward", (value>0));
     }
 }
 
