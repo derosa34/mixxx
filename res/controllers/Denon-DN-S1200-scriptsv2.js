@@ -71,6 +71,11 @@ DNS1200.MIDI_CH["[Channel2]"] = 0xB1;
 DNS1200.MIDI_TRI_LED_ON = 0x4A;
 DNS1200.MIDI_TRI_LED_OFF = 0x4B;
 DNS1200.MIDI_TRI_LED_BLINK = 0x4C;
+// HID Status constants
+DNS1200.LIGHT_ON = 0;
+DNS1200.LIGHT_OFF = 1;
+DNS1200.LIGHT_BLINK = 2;
+
 // Effects Array
 DNS1200.EFFECTS = [];
 DNS1200.EFFECTS["None"] = 0;
@@ -126,9 +131,9 @@ DNS1200.init = function (id, debug) {
     //DNS1200.leftDeck = new DNS1200.Deck(DNS1200.MIDI_CH1);
 	DNS1200.logInfo("Initializing Denon DNS-1200 controller id="+id);
 	DNS1200.logInfo("Creating Deck for Channel 1");
-	DNS1200.Deck["[Channel1]"] = new DNS1200.Deck(DNS1200.MIDI_CH1);
+	DNS1200.Deck["[Channel1]"] = new DNS1200.createDeck(DNS1200.MIDI_CH1);
 	DNS1200.logInfo("Creating Deck for Channel 2");
-	DNS1200.Deck["[Channel2]"] = new DNS1200.Deck(DNS1200.MIDI_CH2);	
+	DNS1200.Deck["[Channel2]"] = new DNS1200.createDeck(DNS1200.MIDI_CH2);	
     DNS1200.logInfo("All is Ok");
     //Initialise Engine Startup Values
     
@@ -155,7 +160,7 @@ DNS1200.shutdown = function () {
 /**
  * Container class to hold the controls which are repeated on both decks
  */
-DNS1200.Deck = function (channel) {
+DNS1200.createDeck = function (channel) {
     // Some state variables
     this.isVinylMode = true;
     this.remain_mode = true;
@@ -173,50 +178,7 @@ DNS1200.Deck = function (channel) {
 	this.memo_pressed = false;
 	this.hotcue_mode = false;
 
-    //Initialize VFD for default switch on 
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4E, 0x01); //OFF for VFD Symbol: T.
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4D, 0x02); //ON  for VFD Symbol: REMAIN
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4E, 0x03); //OFF for VFD Symbol: ELAPSED
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4E, 0x04); //OFF for VFD Symbol: CONT.
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4D, 0x05); //ON  for VFD Symbol: SINGLE
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4E, 0x06); //OFF for VFD Symbol: BPM
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4D, 0x07); //ON  for VFD Symbol: m
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4D, 0x08); //ON  for VFD Symbol: s
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4D, 0x09); //ON  for VFD Symbol: f
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4E, 0x0A); //OFF for VFD Symbol: Pitch dot Right
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4D, 0x0B); //ON  for VFD Symbol: Pitch dot center
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4E, 0x0C); //OFF for VFD Symbol: Pitch dot left
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4E, 0x14); //OFF for VFD Symbol: KEY ADJ.
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4D, 0x1E); //ON  for VFD Symbol: Scratch Ring Outside
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4D, 0x1F); //ON  for VFD Symbol: Scratch Ring Inside
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4E, 0x20); //OFF for VFD Symbol: Touch Dot
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4D, 0x22); //ON  for VFD Symbol: Scratch Position 1 (Top right)
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4E, 0x16); //OFF for VFD Symbol: ( :A1 side
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4E, 0x17); //OFF for VFD Symbol: ( :A2 side
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4E, 0x18); //OFF for VFD Symbol: ) :A1 side
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4E, 0x19); //OFF for VFD Symbol: ) :A2 side
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4E, 0x1A); //OFF for VFD Symbol: A1
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4E, 0x1B); //OFF for VFD Symbol: A2
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4E, 0x1C); //OFF for VFD Symbol: B :A1 side
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4E, 0x1D); //OFF for VFD Symbol: B :A2 side
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4E, 0x1D); //OFF for VFD Symbol: B :A2 side
-    
-    //Initialize LED for default switch on 
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4A, 0x01); //ON  for LED: Disc Eject
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4A, 0x06); //ON  for LED: JOG Mode
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4A, 0x07); //ON  for LED: Pitch / KEY
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4B, 0x0B); //OFF for LED: ECHO / LOOP
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4B, 0x0D); //OFF for LED: FLANGER
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4B, 0x0F); //OFF for LED: FILTER
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4B, 0x0E); //OFF for LED: Parameter KNOB
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4B, 0x24); //OFF for LED: A1
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4B, 0x25); //OFF for LED: A2
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4B, 0x26); //OFF for LED: Cue
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4B, 0x27); //OFF for LED: Play
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4B, 0x28); //OFF for LED: Brake
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4B, 0x29); //OFF for LED: Dump
-    midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x4B, 0x3A); //OFF for LED: Reverse
-    
+   
     //Initialize Screen
 	DNS1200.logInfo("Initialize Screen"); 
     midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x48, 0); //Track position normal
@@ -271,25 +233,19 @@ DNS1200.Deck = function (channel) {
     engine.connectControl(this.group,"reverseroll","DNS1200.dumpLight");
     
     
-    // Initialize vinyl mode LED
-    // For Denon hardware we need to swap the 2 midi bytes (= 2nd/3rd param) in sendShortMsg()!
     DNS1200.logInfo("Initializing controller DNS1200");
-    //midi.sendShortMsg(0xB0 + this.midiChannel, 0x06, this.isVinylMode ? 0x4A: 0x4B);
-    //midi.sendShortMsg(0xB0 + this.midiChannel, this.isVinylMode ? 0x4A: 0x4B, 0x06);
     
     // Match pitch fader direction with controller
     engine.setValue(this.group, "rate_dir", -1);
 	
     // Rate range toggle button callback
-	//TODO this is not yet matc hed with any button of Denon controller. Please do it
+	//TODO this is not yet matched with any button of Denon controller. Please do it
     this.rateRange = function(midichan, control, value, status, group) {
         if (value === 0) return;     // don't respond to note off messages
         var currRateRange = engine.getValue(group, "rateRange");
         engine.setValue(this.group, "rateRange", DNS1200.getNextRateRange(currRateRange));
     };
 
-
-    
 };
 
 // Callback for toggling the vinyl mode button
@@ -1052,6 +1008,42 @@ DNS1200.scratchEnable = function (deck, ramp) {
 }
 
 /***************************************************************/
+/* HID MANAGEMENT                                              */
+/***************************************************************/
+
+DNS1200.initDeckLEDS = function (group) {
+
+    //Initialize LEDs - STEP 1 - Switch All Off 
+	for (i = 0x01; i < 0x41; i++) {
+		DNS1200.toggleLightLayer2(DNS1200.MIDI_CH[group], i, DNS1200.LIGHT_OFF);
+	}
+	//Sequence for Light On
+	DNS1200.toggleLightLayer2(DNS1200.MIDI_CH[group], 0x02, DNS1200.LIGHT_ON); 
+	DNS1200.toggleLightLayer2(DNS1200.MIDI_CH[group], 0x05, DNS1200.LIGHT_ON); //ON  for VFD Symbol: SINGLE
+	DNS1200.toggleLightLayer2(DNS1200.MIDI_CH[group], 0x07, DNS1200.LIGHT_ON); //ON  for VFD Symbol: m
+	DNS1200.toggleLightLayer2(DNS1200.MIDI_CH[group], 0x08, DNS1200.LIGHT_ON); //ON  for VFD Symbol: s
+	DNS1200.toggleLightLayer2(DNS1200.MIDI_CH[group], 0x09, DNS1200.LIGHT_ON); //ON  for VFD Symbol: f
+	DNS1200.toggleLightLayer2(DNS1200.MIDI_CH[group], 0x0B, DNS1200.LIGHT_ON); //ON  for VFD Symbol: Pitch dot center
+	DNS1200.toggleLightLayer2(DNS1200.MIDI_CH[group], 0x0E, DNS1200.LIGHT_ON); //ON  for Scratch Ring Outside
+	DNS1200.toggleLightLayer2(DNS1200.MIDI_CH[group], 0x0F, DNS1200.LIGHT_ON); //ON  Scratch Ring Inside
+	DNS1200.toggleLightLayer2(DNS1200.MIDI_CH[group], 0x22, DNS1200.LIGHT_ON); //ON  for VFD Symbol: Scratch Position 1 (Top right)
+    
+    //Initialize LED for default switch on 
+    //Initialize LEDs - STEP 1 - Switch All Off 
+/*
+	for (i = 0x01; i < 0x41; i++) {
+		DNS1200.toggleLightLayer1(DNS1200.MIDI_CH[group], i, DNS1200.LIGHT_OFF);
+	}
+*/
+	for (i in {0x01, 0x06, 0x07, 0x0B, 0x0D, 0x0F, 0x1E, 0x24, 0x3E, 0x25, 0x3F, 0x26, 0x27, 0x28, 0x29, 0x3A, 0x3C}) {
+		DNS1200.toggleLightLayer1(DNS1200.MIDI_CH[group], i, DNS1200.LIGHT_OFF);
+	}
+	DNS1200.toggleLightLayer1(DNS1200.MIDI_CH[group], 0x01, DNS1200.LIGHT_ON);
+	DNS1200.toggleLightLayer1(DNS1200.MIDI_CH[group], 0x06, DNS1200.LIGHT_ON);
+	DNS1200.toggleLightLayer1(DNS1200.MIDI_CH[group], 0x07, DNS1200.LIGHT_ON);
+}
+
+/***************************************************************/
 /* LIGHT MANAGEMENT - LED                                      */
 /*                                                             */
 DNS1200.toggleLightLayer1 = function (group, light, status) {
@@ -1068,13 +1060,6 @@ DNS1200.toggleLightLayer1 = function (group, light, status) {
 			midi.sendShortMsg(DNS1200.MIDI_CH[group], 0x4C, light); //Blink LED
 			break;
 		}
-/*
-    if (status > 0) {
-        midi.sendShortMsg(DNS1200.MIDI_CH[group], 0x4A, light); //Switch on LED
-    } else {
-        midi.sendShortMsg(DNS1200.MIDI_CH[group], 0x4B, light); //Switch off LED
-    }
-*/
 }
 
 /***************************************************************/
