@@ -72,8 +72,8 @@ DNS1200.MIDI_TRI_LED_ON = 0x4A;
 DNS1200.MIDI_TRI_LED_OFF = 0x4B;
 DNS1200.MIDI_TRI_LED_BLINK = 0x4C;
 // HID Status constants
-DNS1200.LIGHT_ON = 0;
-DNS1200.LIGHT_OFF = 1;
+DNS1200.LIGHT_ON = 1;
+DNS1200.LIGHT_OFF = 0;
 DNS1200.LIGHT_BLINK = 2;
 
 // Effects Array
@@ -88,10 +88,12 @@ DNS1200.EFFECTS["Moog Filter"] = 15;
 DNS1200.EFFECTS["Phaser"] = 17;
 DNS1200.EFFECTS["Reverb"] = 18;
 DNS1200.myEffects = ["None", "Autopan", "Balance", "Echo", "Filter", "Flanger", "Moog Filter", "Phaser", "Reverb"];
+DNS1200.keyTrans = {1:"C", 2:"Db", 3:"D", 4:"Eb", 5:"E", 6:"F", 7:"F#/Gb", 8:"G", 9:"Ab", 10:"A", 11:"Bb", 12:"B"};
 // Define Deck Table
 DNS1200.Deck = []; //Mustbe declared here to be accessible from the rest of scripts !!
 
 DNS1200.pitchTimer = 0;
+//DNS1200.displayTempTextTimer = 0;
 
 
 ////////////////////////////////////////////////////////////////////////
@@ -176,9 +178,15 @@ DNS1200.createDeck = function (channel) {
     this.brake_mode = false;
 	this.flip_pressed = false;
 	this.memo_pressed = false;
+	this.TAP_pressed = false;
 	this.hotcue_mode = false;
+	this.pitchkey_mode = 1; //0 for OFF,1 for mastertempo,2 for manual key change
+	this.displayTempTextTimer = 0;
 
-   
+
+	//Initialize leds and symbols
+	DNS1200.initDeckLEDS(this.group);
+	
     //Initialize Screen
 	DNS1200.logInfo("Initialize Screen"); 
     midi.sendShortMsg(DNS1200.MIDI_CH[this.group], 0x48, 0); //Track position normal
@@ -773,6 +781,27 @@ DNS1200.backCallback = function (channel, control, value, status, group) {
     }
 }
 
+DNS1200.TAPCallback = function (channel, control, value, status, group) {
+	DNS1200.Deck[group].TAP_pressed = (value !== 0);
+}
+
+DNS1200.pitchbendCallback = function (channel, control, value, status, group) {
+	//DNS1200.logInfo("pitchbendCallback called: "+channel+" "+control+" "+value+" "+status+" "+group);
+	//Button released=> Do nothing
+	if (value === 0) {
+        return;
+    }
+	if (DNS1200.Deck[group].TAP_pressed) {//Change pitch
+		if (control===8) {//Button +
+			engine.setParameter(group, "pitch_up", true);
+		} else {//Button -
+			engine.setParameter(group, "pitch_down", true);
+		}
+		//need to wait few miliseconds before displaying key change (time for engine to change it)
+		engine.beginTimer(50,function() { DNS1200.displayKeyText(group) }, true);
+	}
+}
+
 DNS1200.fwdCallback = function (channel, control, value, status, group) {
 	//Button released=> Do nothing
 	/*if (value === 0) {
@@ -802,6 +831,46 @@ DNS1200.rewCallback = function (channel, control, value, status, group) {
     }
 }
 
+DNS1200.pitchkeyCallback = function (channel, control, value, status, group) {
+	if (value) {// button pressed start timer
+		//begin timer 
+		DNS1200.pitchTimer = engine.beginTimer(1000,function() { DNS1200.pitchRangeChange(group); }, true);
+	} else { //button released
+		if (DNS1200.pitchTimer !== 0) { //if a timer is running, means button was released before one second - classic press
+			//stop the timer 
+			engine.stopTimer(DNS1200.pitchTimer);
+			//Launch action
+			DNS1200.switchPitchkeyMode(group);
+		}
+		DNS1200.pitchTimer = 0; //reset timer
+	}
+}
+
+DNS1200.switchPitchkeyMode = function (group) {
+	DNS1200.Deck[group].pitchkey_mode = (DNS1200.Deck[group].pitchkey_mode === false);
+	DNS1200.updatepitchkeyLED(group);
+	engine.setParameter(group, "keylock", DNS1200.Deck[group].pitchkey_mode);
+/*	switch(DNS1200.Deck[group].pitchkey_mode) {
+		case 0 : //Off => switch On
+			DNS1200.Deck[group].pitchkey_mode = 1;
+			engine.setParameter(group, "keylock", true);
+			//engine.getParameter(group, "reset_key", true);
+			break;
+		case 1 : //On => Switch Manual
+			DNS1200.Deck[group].pitchkey_mode = 2;
+			engine.setParameter(group, "keylock", true);
+			var currentKey = engine.getParameter(group,"key");
+			DNS1200.logInfo("currentKey;"+currentKey);
+			break;
+		case 2 : //Manual => Switch Off
+			DNS1200.Deck[group].pitchkey_mode = 0;
+			engine.setParameter(group, "keylock", false);
+			break;
+	}
+	DNS1200.toggleLightLayer1(group, 0x07, DNS1200.Deck[group].pitchkey_mode);
+	//DNS1200.Deck[group].pitchkey_mode = 1;
+*/
+}
 
 DNS1200.updateEffect = function (engineChannel, active_effect, effectIndex) {
 	DNS1200.logInfo("updateEffect called: engineChannel:"+engineChannel+" active_effect:"+active_effect+" effectIndex:"+effectIndex);
@@ -909,8 +978,9 @@ DNS1200.rateDisplay = function (value, group) {
 }
 
 DNS1200.playPositionChanged = function (value, group) {
-    DNS1200.logInfo("playPositionChanged called: value:"+value+" group:"+group+" remain_mode:"+DNS1200.Deck[group].remain_mode);
-    var track_length = engine.getValue(group, "duration");
+    //DNS1200.logInfo("playPositionChanged called: currentKey:"+currentKey+" fileKey:"+fileKey+" newStatus:"+newStatus); //+" remain_mode:"+DNS1200.Deck[group].remain_mode
+	//PitchKeyLED
+	DNS1200.updatepitchkeyLED(group);
 
     // Track percentage position.
     DNS1200.updateTrackPosition(value, group);
@@ -930,6 +1000,17 @@ DNS1200.updateTrackPosition = function (value, group) {
     } else {
         midi.sendShortMsg(DNS1200.MIDI_CH[group], 0x48, Math.round(track_position * 100));
     }
+}
+
+DNS1200.updatepitchkeyLED = function (group) {
+	if (DNS1200.Deck[group].pitchkey_mode)
+	{
+		var currentKey = engine.getParameter(group,"key");
+		var fileKey = engine.getParameter(group,"file_key");
+		var newStatus = (currentKey-fileKey === 0) ? 1 : 2;
+		DNS1200.logInfo("updatepitchkeyLED called: currentKey:"+currentKey+" fileKey:"+fileKey+" newStatus:"+newStatus);
+	} else var newStatus = 0;
+	DNS1200.toggleLightLayer1(group, 0x07, newStatus);
 }
 
 DNS1200.updateTrackTime = function (value, group) {
@@ -961,11 +1042,38 @@ DNS1200.updateTrackTime = function (value, group) {
     DNS1200.displayTrackTime(DNS1200.MIDI_CH[group], minutes, seconds, frames);
 }
 
+DNS1200.displayKeyText = function (group) {
+	var currentKey = engine.getParameter(group,"key");
+	//DNS1200.logInfo("pitchbendCallback called: beforeKey:"+beforeKey+" currentKey:"+currentKey+" afterKey:"+afterKey);
+	DNS1200.displayTempText(group, 2000, "Key Changed", DNS1200.keyTrans[currentKey]);
+}
+
 DNS1200.displayTrackTime = function (channelmidi, pos_minutes, pos_secs, pos_frac) {
     midi.sendShortMsg(channelmidi, 0x42, pos_minutes); //Time Minute OK
     midi.sendShortMsg(channelmidi, 0x43, pos_secs);
     midi.sendShortMsg(channelmidi, 0x44, pos_frac);
 }
+
+DNS1200.displayTempText = function (group, displayTime, line1, line2) {
+	//if (DNS1200.Deck[group].displayTempTextTimer === 0) { //No text is actually temporary displayed
+		DNS1200.logInfo("Called displayTempText and group:"+group+" displayTime:"+displayTime+" line1:"+line1);
+		//launch restore default text message procedure
+		DNS1200.Deck[group].displayTempTextTimer = engine.beginTimer(displayTime,function() { DNS1200.restoreText(group); }, true);  
+		//Display text according parameters line1 & line2
+		DNS1200.displayText(group, line1, line2);
+	//}
+}
+
+DNS1200.restoreText = function (group) {
+	DNS1200.displayText(group, "Desk N°"+DNS1200.Deck[group].engineChannel, "Derosa");
+	DNS1200.Deck[group].displayTempTextTimer = 0;
+}
+
+DNS1200.displayText = function (group, line1, line2) {
+	DNS1200.displayTextLine1(group, line1);
+	DNS1200.displayTextLine2(group, line2);
+}
+
 
 DNS1200.displayTextLine1 = function (group, textToDisplay) {
     var MSB = 0x01;
@@ -1012,35 +1120,39 @@ DNS1200.scratchEnable = function (deck, ramp) {
 /***************************************************************/
 
 DNS1200.initDeckLEDS = function (group) {
-
+	DNS1200.logInfo("Called initDeckLEDS and group:"+group);
     //Initialize LEDs - STEP 1 - Switch All Off 
 	for (i = 0x01; i < 0x41; i++) {
-		DNS1200.toggleLightLayer2(DNS1200.MIDI_CH[group], i, DNS1200.LIGHT_OFF);
+		DNS1200.toggleLightLayer2(group, i, DNS1200.LIGHT_OFF);
+	    DNS1200.logInfo("toggleLightLayer2("+i+")");
 	}
 	//Sequence for Light On
-	DNS1200.toggleLightLayer2(DNS1200.MIDI_CH[group], 0x02, DNS1200.LIGHT_ON); 
-	DNS1200.toggleLightLayer2(DNS1200.MIDI_CH[group], 0x05, DNS1200.LIGHT_ON); //ON  for VFD Symbol: SINGLE
-	DNS1200.toggleLightLayer2(DNS1200.MIDI_CH[group], 0x07, DNS1200.LIGHT_ON); //ON  for VFD Symbol: m
-	DNS1200.toggleLightLayer2(DNS1200.MIDI_CH[group], 0x08, DNS1200.LIGHT_ON); //ON  for VFD Symbol: s
-	DNS1200.toggleLightLayer2(DNS1200.MIDI_CH[group], 0x09, DNS1200.LIGHT_ON); //ON  for VFD Symbol: f
-	DNS1200.toggleLightLayer2(DNS1200.MIDI_CH[group], 0x0B, DNS1200.LIGHT_ON); //ON  for VFD Symbol: Pitch dot center
-	DNS1200.toggleLightLayer2(DNS1200.MIDI_CH[group], 0x0E, DNS1200.LIGHT_ON); //ON  for Scratch Ring Outside
-	DNS1200.toggleLightLayer2(DNS1200.MIDI_CH[group], 0x0F, DNS1200.LIGHT_ON); //ON  Scratch Ring Inside
-	DNS1200.toggleLightLayer2(DNS1200.MIDI_CH[group], 0x22, DNS1200.LIGHT_ON); //ON  for VFD Symbol: Scratch Position 1 (Top right)
+	DNS1200.toggleLightLayer2(group, 0x02, DNS1200.LIGHT_ON); 
+	DNS1200.toggleLightLayer2(group, 0x05, DNS1200.LIGHT_ON); //ON  for VFD Symbol: SINGLE
+	DNS1200.toggleLightLayer2(group, 0x07, DNS1200.LIGHT_ON); //ON  for VFD Symbol: m
+	DNS1200.toggleLightLayer2(group, 0x08, DNS1200.LIGHT_ON); //ON  for VFD Symbol: s
+	DNS1200.toggleLightLayer2(group, 0x09, DNS1200.LIGHT_ON); //ON  for VFD Symbol: f
+	DNS1200.toggleLightLayer2(group, 0x0B, DNS1200.LIGHT_ON); //ON  for VFD Symbol: Pitch dot center
+	DNS1200.toggleLightLayer2(group, 0x1E, DNS1200.LIGHT_ON); //ON  for Scratch Ring Outside
+	DNS1200.toggleLightLayer2(group, 0x1F, DNS1200.LIGHT_ON); //ON  for Scratch Ring Inside
+	DNS1200.toggleLightLayer2(group, 0x22, DNS1200.LIGHT_ON); //ON  for VFD Symbol: Scratch Position 1 (Top right)
     
     //Initialize LED for default switch on 
     //Initialize LEDs - STEP 1 - Switch All Off 
 /*
 	for (i = 0x01; i < 0x41; i++) {
-		DNS1200.toggleLightLayer1(DNS1200.MIDI_CH[group], i, DNS1200.LIGHT_OFF);
-	}
+		DNS1200.toggleLightLayer1(group, i, DNS1200.LIGHT_OFF);
+	
 */
-	for (i in {0x01, 0x06, 0x07, 0x0B, 0x0D, 0x0F, 0x1E, 0x24, 0x3E, 0x25, 0x3F, 0x26, 0x27, 0x28, 0x29, 0x3A, 0x3C}) {
-		DNS1200.toggleLightLayer1(DNS1200.MIDI_CH[group], i, DNS1200.LIGHT_OFF);
+
+	for (i in {1:0x01, 2:0x06, 3:0x07, 4:0x0B, 5:0x0D, 6:0x0F, 7:0x1E, 8:0x24, 9:0x3E, 10:0x25, 11:0x3F, 12:0x26, 13:0x27, 14:0x28, 15:0x29, 16:0x3A, 17:0x3C}) {
+		DNS1200.toggleLightLayer1(group, i, DNS1200.LIGHT_OFF);
 	}
-	DNS1200.toggleLightLayer1(DNS1200.MIDI_CH[group], 0x01, DNS1200.LIGHT_ON);
-	DNS1200.toggleLightLayer1(DNS1200.MIDI_CH[group], 0x06, DNS1200.LIGHT_ON);
-	DNS1200.toggleLightLayer1(DNS1200.MIDI_CH[group], 0x07, DNS1200.LIGHT_ON);
+	DNS1200.toggleLightLayer1(group, 0x01, DNS1200.LIGHT_ON); //ON  for LED: Disc Eject
+	DNS1200.toggleLightLayer1(group, 0x06, DNS1200.LIGHT_ON); //ON  for LED: JOG Mode
+	DNS1200.toggleLightLayer1(group, 0x07, DNS1200.LIGHT_ON); //ON  for LED: Pitch / KEY
+
+
 }
 
 /***************************************************************/
@@ -1066,6 +1178,7 @@ DNS1200.toggleLightLayer1 = function (group, light, status) {
 /* LIGHT MANAGEMENT - VFD Symbol                               */
 /*                                                             */
 DNS1200.toggleLightLayer2 = function (group, light, status) {
+	DNS1200.logInfo("Called: toggleLightLayer2(group:"+group+" light:"+light+" status:"+status+")");
 	switch(status) {
 		case 0:
 		case false:
