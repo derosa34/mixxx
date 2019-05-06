@@ -48,7 +48,7 @@ DNS1200.midiChannelBase = 0xB0; //TBD
 // Hardware constant for resolution of the jog wheel
 // This was found by averaging total 'ticks' received over 10 rotations
 DNS1200.jogWheelTicksPerRevolution = 1480;
-DNS1200.jogStep=2;
+DNS1200.jogStep=3;
 
 ////////////////////////////////////////////////////////////////////////
 // Fixed constants                                                    //
@@ -88,7 +88,7 @@ DNS1200.EFFECTS["Moog Filter"] = 15;
 DNS1200.EFFECTS["Phaser"] = 17;
 DNS1200.EFFECTS["Reverb"] = 18;
 DNS1200.myEffects = ["None", "Autopan", "Balance", "Echo", "Filter", "Flanger", "Moog Filter", "Phaser", "Reverb"];
-DNS1200.keyTrans = {1:"C", 2:"Db", 3:"D", 4:"Eb", 5:"E", 6:"F", 7:"F#/Gb", 8:"G", 9:"Ab", 10:"A", 11:"Bb", 12:"B"};
+DNS1200.keyTrans = {1:"C", 2:"Db", 3:"D", 4:"Eb", 5:"E", 6:"F", 7:"F#/Gb", 8:"G", 9:"Ab", 10:"A", 11:"Bb", 12:"B", 13:"Cm", 14:"C#m", 15:"Dm", 16:"D#m/Ebm", 17:"Em", 18:"Fm", 19:"F#m", 20:"Gm", 21:"G#m", 22:"Am", 23:"Bbm", 24:"Bm"};
 // Define Deck Table
 DNS1200.Deck = []; //Mustbe declared here to be accessible from the rest of scripts !!
 
@@ -310,10 +310,7 @@ DNS1200.brake_button = function(channel, control, value, status, group) {
 	if (value) { //Button pressed
 		//Toggle Brake Mode
 		DNS1200.Deck[group].brake_mode = !DNS1200.Deck[group].brake_mode;
-		engine.brake(deck, DNS1200.Deck[group].brake_mode); // Enable / Disable Brake effect
 		//DNS1200.logDebug("engine.brake(deck="+deck+", this.brake_mode"+this.brake_mode);
-		//Update LED: Brake
-		midi.sendShortMsg(DNS1200.MIDI_CH[group], DNS1200.Deck[group].brake_mode ? 0x4A : 0x4B, 0x28);
 //          engine.softStart(deck, true);
 	} //Nothing to do whenbutton is released
 }
@@ -352,6 +349,7 @@ DNS1200.loopCallback = function (channel, control, value, status, group) {
 			DNS1200.logInfo("A1 is pressed channel:"+channel+" control:"+control+" value:"+value+" status:"+status+" group:"+group);
 			if (DNS1200.Deck[group].hotcue_mode) {
 				if (value === 0) return;     // don't respond to note off messages
+				/*
 				if (DNS1200.Deck[group].memo_pressed) {
 					engine.setValue(group, "hotcue_1_activate", 1);
 					//DNS1200.displayTextLine1(group, "Hot Cue 1");
@@ -362,6 +360,15 @@ DNS1200.loopCallback = function (channel, control, value, status, group) {
 					DNS1200.displayTextLine1(group, "A1 Clear");
 				} else if (engine.getValue(group, "hotcue_1_enabled")) {
 				engine.setValue(group, "hotcue_1_activate", 1);
+				}
+				 */
+				if (DNS1200.Deck[group].flip_pressed) {
+					engine.setValue(group, "hotcue_1_clear", 1);
+					DNS1200.displayTempText(group, 2000, "A1 Clear", "");
+				} else {
+					var cueState = (engine.getValue(group, "hotcue_1_enabled")) ? "Called" : "Set";
+					engine.setValue(group, "hotcue_1_activate", 1);
+					DNS1200.displayTempText(group, 2000, "A1 "+cueState, "");
 				}
 				//Update HotCue LED
 				DNS1200.updateHotCueLED(group);
@@ -376,6 +383,7 @@ DNS1200.loopCallback = function (channel, control, value, status, group) {
 			DNS1200.logInfo("A2 is pressed channel:"+channel+" control:"+control+" value:"+value+" status:"+status+" group:"+group);
 			if (DNS1200.Deck[group].hotcue_mode) {
 				if (value === 0) return;     // don't respond to note off messages
+/*
 				if (DNS1200.Deck[group].memo_pressed) {
 					engine.setValue(group, "hotcue_2_activate", 1);
 					//DNS1200.displayTextLine1(group, "Hot Cue 2");
@@ -387,6 +395,15 @@ DNS1200.loopCallback = function (channel, control, value, status, group) {
 					//DNS1200.displayTextLine2(group, "Cleared");
 				} else if (engine.getValue(group, "hotcue_2_enabled")) {
 					engine.setValue(group, "hotcue_2_activate", 1);
+				}
+*/
+				if (DNS1200.Deck[group].flip_pressed) {
+					engine.setValue(group, "hotcue_2_clear", 1);
+					DNS1200.displayTempText(group, 2000, "A2 Clear", "");
+				} else {
+					var cueState = (engine.getValue(group, "hotcue_2_enabled")) ? "Called" : "Set";
+					engine.setValue(group, "hotcue_2_activate", 1);
+					DNS1200.displayTempText(group, 2000, "A2 "+cueState, "");
 				}
 				//Update HotCue LED
 				DNS1200.updateHotCueLED(group);
@@ -434,13 +451,15 @@ DNS1200.loopCallback = function (channel, control, value, status, group) {
 			if (DNS1200.Deck[group].flip_pressed) {
 				DNS1200.Deck[group].hotcue_mode = !DNS1200.Deck[group].hotcue_mode;
 				if (DNS1200.Deck[group].hotcue_mode) { //If Hot Cue Mode is enabled
-					DNS1200.displayTextLine1(group, "HotCue Mode");
-					DNS1200.displayTextLine2(group, "Enabled");
+					//DNS1200.displayTextLine1(group, "HotCue Mode");
+					//DNS1200.displayTextLine2(group, "Enabled");
+					DNS1200.displayTempText(group, 2000, "HotCue Mode", "Enabled");
 					//Update LED
 					DNS1200.updateHotCueLED(group);
 				} else {
-					DNS1200.displayTextLine1(group, "HotCue Mode");
-					DNS1200.displayTextLine2(group, "Disabled");
+					//DNS1200.displayTextLine1(group, "HotCue Mode");
+					//DNS1200.displayTextLine2(group, "Disabled");
+					DNS1200.displayTempText(group, 2000, "HotCue Mode", "Disabled");
 					//Update LED
 					if (engine.getValue(group, "loop_enabled")) {
 						DNS1200.toggleLightLayer1(group,0x24,1); //ON for LED: A1 
@@ -788,18 +807,23 @@ DNS1200.TAPCallback = function (channel, control, value, status, group) {
 DNS1200.pitchbendCallback = function (channel, control, value, status, group) {
 	//DNS1200.logInfo("pitchbendCallback called: "+channel+" "+control+" "+value+" "+status+" "+group);
 	//Button released=> Do nothing
-	if (value === 0) {
-        return;
-    }
+	//if (value === 0) {
+    //    return;
+    //}
 	if (DNS1200.Deck[group].TAP_pressed) {//Change pitch
 		if (control===8) {//Button +
-			engine.setParameter(group, "pitch_up", true);
+			engine.setParameter(group, "pitch_up", value);
 		} else {//Button -
-			engine.setParameter(group, "pitch_down", true);
+			engine.setParameter(group, "pitch_down", value);
 		}
 		//need to wait few miliseconds before displaying key change (time for engine to change it)
 		engine.beginTimer(50,function() { DNS1200.displayKeyText(group) }, true);
-	}
+	} else if (control===8) {//Button + without TAP pressed
+			engine.setParameter(group, "rate_temp_up", (value!==0));
+		} else {//Button -
+			engine.setParameter(group, "rate_temp_down", (value!==0));
+		}
+
 }
 
 DNS1200.fwdCallback = function (channel, control, value, status, group) {
@@ -902,7 +926,6 @@ DNS1200.playButton = function (channel, control, value, status, group) {
     //channel:0 control:67 value:64 status:144 group:[Channel1]
     //status 0x90 (ch 1, opcode 0x9), ctrl 0x43, val 0x40
     // Only respond to presses.
-    
     if (value === 0) {
         return;
     }
@@ -912,9 +935,10 @@ DNS1200.playButton = function (channel, control, value, status, group) {
 
     // Toggle it.
     if (currentlyPlaying) { //Track is playing
-        if (DNS1200.Deck[group].brake_mode) { //Brake mode isenabled
-            engine.brake(deck, DNS1200.Deck[group].brake_mode, 1.2, -12); // Launch Brake effect
-            DNS1200.logInfo("playButton called v3: engine.brake(deck:"+deck+" true:"+true);
+        if (DNS1200.Deck[group].brake_mode) { //Brake mode is enabled
+            //engine.brake(deck, DNS1200.Deck[group].brake_mode, 1.2, -12); // Launch Brake effect
+			engine.brake(deck, DNS1200.Deck[group].brake_mode); // Launch Brake effect
+			DNS1200.logInfo("playButton called v3: engine.brake(deck:"+deck+" DNS1200.Deck[group].brake_mode:"+DNS1200.Deck[group].brake_mode);
         } else {
             engine.setValue(group, "play", 0.0); // Or simply stop playing
         }
@@ -925,7 +949,7 @@ DNS1200.playButton = function (channel, control, value, status, group) {
             engine.setValue(group, "play", 1.0); // Or simply start playing
         }
     }
-    DNS1200.playChanged(value, group);
+    //DNS1200.playChanged(value, group);
 
 }
 
@@ -978,9 +1002,12 @@ DNS1200.rateDisplay = function (value, group) {
 }
 
 DNS1200.playPositionChanged = function (value, group) {
-    //DNS1200.logInfo("playPositionChanged called: currentKey:"+currentKey+" fileKey:"+fileKey+" newStatus:"+newStatus); //+" remain_mode:"+DNS1200.Deck[group].remain_mode
+
 	//PitchKeyLED
 	DNS1200.updatepitchkeyLED(group);
+	
+	//BrakeLED
+	DNS1200.updatebrakeLED(group);
 
     // Track percentage position.
     DNS1200.updateTrackPosition(value, group);
@@ -1011,6 +1038,12 @@ DNS1200.updatepitchkeyLED = function (group) {
 		DNS1200.logInfo("updatepitchkeyLED called: currentKey:"+currentKey+" fileKey:"+fileKey+" newStatus:"+newStatus);
 	} else var newStatus = 0;
 	DNS1200.toggleLightLayer1(group, 0x07, newStatus);
+}
+
+DNS1200.updatebrakeLED = function (group) {
+	//Update LED: Brake
+	//midi.sendShortMsg(DNS1200.MIDI_CH[group], DNS1200.Deck[group].brake_mode ? 0x4A : 0x4B, 0x28);
+	DNS1200.toggleLightLayer1(group, 0x28, DNS1200.Deck[group].brake_mode);
 }
 
 DNS1200.updateTrackTime = function (value, group) {
@@ -1044,8 +1077,11 @@ DNS1200.updateTrackTime = function (value, group) {
 
 DNS1200.displayKeyText = function (group) {
 	var currentKey = engine.getParameter(group,"key");
+	var fileKey = engine.getParameter(group,"file_key");
+	var diffKey = currentKey-fileKey;
 	//DNS1200.logInfo("pitchbendCallback called: beforeKey:"+beforeKey+" currentKey:"+currentKey+" afterKey:"+afterKey);
-	DNS1200.displayTempText(group, 2000, "Key Changed", DNS1200.keyTrans[currentKey]);
+	//DNS1200.displayTempText(group, 2000, "Key Changed", DNS1200.keyTrans[currentKey]+" ["+currentKey+"-"+fileKey+"="+diffKey+"]");
+	DNS1200.displayTempText(group, 2000, "Key Changed", DNS1200.keyTrans[currentKey]+" ["+diffKey+"]");
 }
 
 DNS1200.displayTrackTime = function (channelmidi, pos_minutes, pos_secs, pos_frac) {
@@ -1144,15 +1180,13 @@ DNS1200.initDeckLEDS = function (group) {
 		DNS1200.toggleLightLayer1(group, i, DNS1200.LIGHT_OFF);
 	
 */
-
-	for (i in {1:0x01, 2:0x06, 3:0x07, 4:0x0B, 5:0x0D, 6:0x0F, 7:0x1E, 8:0x24, 9:0x3E, 10:0x25, 11:0x3F, 12:0x26, 13:0x27, 14:0x28, 15:0x29, 16:0x3A, 17:0x3C}) {
-		DNS1200.toggleLightLayer1(group, i, DNS1200.LIGHT_OFF);
+	var listLight = {1:0x01, 2:0x06, 3:0x07, 4:0x0B, 5:0x0D, 6:0x0F, 7:0x1E, 8:0x24, 9:0x3E, 10:0x25, 11:0x3F, 12:0x26, 13:0x27, 14:0x28, 15:0x29, 16:0x3A, 17:0x3C};
+	for (i in listLight) {
+		DNS1200.toggleLightLayer1(group, listLight[i], DNS1200.LIGHT_OFF);
 	}
 	DNS1200.toggleLightLayer1(group, 0x01, DNS1200.LIGHT_ON); //ON  for LED: Disc Eject
 	DNS1200.toggleLightLayer1(group, 0x06, DNS1200.LIGHT_ON); //ON  for LED: JOG Mode
 	DNS1200.toggleLightLayer1(group, 0x07, DNS1200.LIGHT_ON); //ON  for LED: Pitch / KEY
-
-
 }
 
 /***************************************************************/

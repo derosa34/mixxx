@@ -121,7 +121,7 @@
                 <!-- TAP -->
             <control>
                 <group>[Channel1]</group>
-                <key>DNS1200.testCallback</key>
+                <key>DNS1200.TAPCallback</key>
                 <description>TAP button pressed</description>
                 <status>0x90</status>
                 <midino>0x07</midino>
@@ -131,7 +131,7 @@
             </control>
             <control>
                 <group>[Channel1]</group>
-                <key>DNS1200.testCallback</key>
+                <key>DNS1200.TAPCallback</key>
                 <description>TAP button released</description>
                 <status>0x80</status>
                 <midino>0x07</midino>
@@ -193,7 +193,7 @@
                 <status>0x80</status>
                 <midino>0x43</midino>
                 <options>
-                    <normal/>
+                    <script-binding/>
                 </options>
             </control>
             <!-- Eject -->
@@ -412,22 +412,22 @@
                 <!-- Pitch Key -->
              <control>
                 <group>[Channel1]</group>
-                <key>keylock</key>
+                <key>DNS1200.pitchkeyCallback</key>
                 <description>Pitch/Key Pressed</description>
                 <status>0x90</status>
                 <midino>0x05</midino>
                 <options>
-                    <normal/>
+                    <script-binding/>
                 </options>
             </control>
              <control>
                 <group>[Channel1]</group>
-                <key>keylock</key>
+                <key>DNS1200.pitchkeyCallback</key>
                 <description>Pitch/Key Released</description>
                 <status>0x80</status>
                 <midino>0x05</midino>
                 <options>
-                    <normal/>
+                    <script-binding/>
                 </options>
             </control>
                  <!-- Parameters Knob -->
@@ -528,42 +528,42 @@
             <!-- Pitch-bend buttons -->
             <control>
                 <group>[Channel1]</group>
-                <key>rate_temp_down</key>
+                <key>DNS1200.pitchbendCallback</key>
                 <description>PITCH BEND button (-) pressed</description>
                 <status>0x90</status>
                 <midino>0x09</midino>
                 <options>
-                    <normal/>
+                    <script-binding/>
                 </options>
             </control>
             <control>
                 <group>[Channel1]</group>
-                <key>rate_temp_down</key>
+                <key>DNS1200.pitchbendCallback</key>
                 <description>PITCH BEND button (-) released</description>
                 <status>0x80</status>
                 <midino>0x09</midino>
                 <options>
-                    <normal/>
+                    <script-binding/>
                 </options>
             </control>
             <control>
                 <group>[Channel1]</group>
-                <key>rate_temp_up</key>
+                <key>DNS1200.pitchbendCallback</key>
                 <description>PITCH BEND button (+) pressed</description>
                 <status>0x90</status>
                 <midino>0x08</midino>
                 <options>
-                    <normal/>
+                    <script-binding/>
                 </options>
             </control>
             <control>
                 <group>[Channel1]</group>
-                <key>rate_temp_up</key>
+                <key>DNS1200.pitchbendCallback</key>
                 <description>PITCH BEND button (+) released</description>
                 <status>0x80</status>
                 <midino>0x08</midino>
                 <options>
-                    <normal/>
+                    <script-binding/>
                 </options>
             </control>
 		</controls>
